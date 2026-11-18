@@ -129,5 +129,5 @@ parser.feed(bytes);
 ## Next steps
 
 - [ ] Connect the library to a MAVLink / SITL telemetry source
-- [ ] Ground-station dashboard (see `mini-gcs`)
+- [x] Ground-station dashboard ([mini-gcs](https://github.com/zackyhaqqi21/mini-gcs))
 - [x] Fuzz testing with random byte streams (see the noisy link benchmark)
