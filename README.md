@@ -84,6 +84,20 @@ Packets damaged on the link are dropped, never delivered wrong.
 Exact numbers can differ slightly between compilers, because `std::uniform_real_distribution`
 is implementation-defined. The trend and the zero false accepts do not change.
 
+## Validated against ArduPilot SITL
+
+The parser was also tested with telemetry from a real ArduPilot SITL flight.
+MAVLink messages are converted to this protocol by `tools/mavlink_source.py` in
+[mini-gcs](https://github.com/zackyhaqqi21/mini-gcs), then fed to the unmodified parser.
+
+| Test | Result |
+|---|---|
+| 602 packets from the converter into the real parser | 602 ok, 0 CRC errors, 0 lost (SEQ wrap at 255 not counted as loss) |
+| Full SITL flight (takeoff to 30 m, square, RTL) at 0 % noise | 2355 valid, 0 rejected, 0 lost, 0 reordered |
+| Same flight with random bit flips injected into the byte stream | damaged packets rejected by CRC, horizon kept showing valid data only |
+
+The noise in the last row is random bit flips added by the server, not a real radio link.
+
 ### Finding: the first `packets_lost` was wrong under reordering (fixed)
 
 The benchmark compares the parser's SEQ-gap loss estimate with the real loss. With only losses
@@ -125,9 +139,10 @@ parser.feed(bytes);
 - CRC16 detects accidental corruption, not tampering. There is no encryption or authentication.
 - Lost packets are not retransmitted.
 - With an 8-bit SEQ, a burst of 128 or more consecutive lost packets looks like a reordered packet.
+- Altitude is an int16 in centimetres, so the maximum is 327.67 m. Higher values would overflow.
 
 ## Next steps
 
-- [ ] Connect the library to a MAVLink / SITL telemetry source
+- [x] Validated against ArduPilot SITL via MAVLink ([mini-gcs](https://github.com/zackyhaqqi21/mini-gcs))
 - [x] Ground-station dashboard ([mini-gcs](https://github.com/zackyhaqqi21/mini-gcs))
 - [x] Fuzz testing with random byte streams (see the noisy link benchmark)
